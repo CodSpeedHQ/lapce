@@ -78,7 +78,7 @@ updater        = []
 vendored-fonts = []
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = { version = "2.6.0", package = "codspeed-criterion-compat" }
 
 [[bench]]
 name    = "visual_line"
