@@ -12,6 +12,7 @@ use std::{
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use crossbeam_channel::Sender;
+use floem::action::show_context_menu;
 use floem::{
     action::show_context_menu,
     cosmic_text::{Style as FontStyle, Weight},
@@ -63,6 +64,7 @@ use notify::Watcher;
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::{filter::Targets, reload::Handle};
 
+use crate::main_split::TabCloseKind;
 use crate::{
     about, alert,
     code_action::CodeActionStatus,
@@ -4062,6 +4064,49 @@ pub fn window_menu(
                 })),
         )
 }
+fn tab_secondary_click(
+    internal_command: Listener<InternalCommand>,
+    editor_tab_id: EditorTabId,
+    child: EditorTabChild,
+) {
+    let mut menu = Menu::new("");
+    let child_other = child.clone();
+    let child_right = child.clone();
+    let child_left = child.clone();
+    menu = menu
+        .entry(MenuItem::new("Close").action(move || {
+            internal_command.send(InternalCommand::EditorTabChildClose {
+                editor_tab_id,
+                child: child.clone(),
+            });
+        }))
+        .entry(MenuItem::new("Close Other Tabs").action(move || {
+            internal_command.send(InternalCommand::EditorTabCloseByKind {
+                editor_tab_id,
+                child: child_other.clone(),
+                kind: TabCloseKind::CloseOther,
+            });
+        }))
+        .entry(MenuItem::new("Close All Tabs").action(move || {
+            internal_command.send(InternalCommand::EditorTabClose { editor_tab_id });
+        }))
+        .entry(MenuItem::new("Close Tabs to the Right").action(move || {
+            internal_command.send(InternalCommand::EditorTabCloseByKind {
+                editor_tab_id,
+                child: child_right.clone(),
+                kind: TabCloseKind::CloseToRight,
+            });
+        }))
+        .entry(MenuItem::new("Close Tabs to the Left").action(move || {
+            internal_command.send(InternalCommand::EditorTabCloseByKind {
+                editor_tab_id,
+                child: child_left.clone(),
+                kind: TabCloseKind::CloseToLeft,
+            });
+        }));
+    show_context_menu(menu, None);
+}
+
 fn tab_secondary_click(
     internal_command: Listener<InternalCommand>,
     editor_tab_id: EditorTabId,
