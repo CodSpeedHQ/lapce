@@ -1716,7 +1716,7 @@ checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
 [[package]]
 name = "floem"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "bitflags 2.6.0",
  "copypasta",
@@ -1734,7 +1734,6 @@ dependencies = [
  "image",
  "indexmap",
  "lapce-xi-rope",
- "once_cell",
  "parking_lot",
  "peniko",
  "raw-window-handle 0.6.0",
@@ -1754,13 +1753,12 @@ dependencies = [
 [[package]]
 name = "floem-editor-core"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "bitflags 2.6.0",
  "itertools 0.12.1",
  "lapce-xi-rope",
  "memchr",
- "once_cell",
  "serde",
  "strum",
  "strum_macros",
@@ -1832,7 +1830,7 @@ dependencies = [
 [[package]]
 name = "floem_reactive"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "smallvec",
 ]
@@ -1840,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "floem_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "cosmic-text",
  "image",
@@ -1853,7 +1851,7 @@ dependencies = [
 [[package]]
 name = "floem_tiny_skia_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -1870,7 +1868,7 @@ dependencies = [
 [[package]]
 name = "floem_vger_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "anyhow",
  "floem-vger",
@@ -2938,7 +2936,7 @@ dependencies = [
 
 [[package]]
 name = "lapce"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "lapce-app",
  "lapce-proxy",
@@ -2946,7 +2944,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-app"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "Inflector",
  "alacritty_terminal",
@@ -3003,14 +3001,14 @@ dependencies = [
  "tracing-subscriber",
  "unicode-width",
  "url",
- "windows-sys 0.52.0",
+ "windows-sys 0.36.1",
  "zip",
  "zstd",
 ]
 
 [[package]]
 name = "lapce-core"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "ahash",
  "anyhow",
@@ -3038,7 +3036,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-proxy"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "alacritty_terminal",
  "anyhow",
@@ -3087,7 +3085,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-rpc"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -4513,9 +4511,9 @@ checksum = "61697e0a1c7e512e84a621326239844a24d8207b4669b41bc18b32ea5cbf988b"
 
 [[package]]
 name = "serde"
-version = "1.0.204"
+version = "1.0.207"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc76f558e0cbb2a839d37354c575f1dc3fdc6546b5be373ba43d95f231bf7c12"
+checksum = "5665e14a49a4ea1b91029ba7d3bca9f299e1f7cfa194388ccc20f14743e784f2"
 dependencies = [
  "serde_derive",
 ]
@@ -4531,9 +4529,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.204"
+version = "1.0.207"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0cd7e117be63d3c3678776753929474f3b04a43a080c744d6b0ae2a8c28e222"
+checksum = "6aea2634c86b0e8ef2cfdc0c340baede54ec27b1e46febd7f80dffb2aa44a00e"
 dependencies = [
  "proc-macro2",
  "quote",
