@@ -1716,7 +1716,7 @@ checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
 [[package]]
 name = "floem"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=a207ef4bd463d41be1d06daeae3be7936b0dbb60#a207ef4bd463d41be1d06daeae3be7936b0dbb60"
 dependencies = [
  "bitflags 2.6.0",
  "copypasta",
@@ -1754,7 +1754,7 @@ dependencies = [
 [[package]]
 name = "floem-editor-core"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=a207ef4bd463d41be1d06daeae3be7936b0dbb60#a207ef4bd463d41be1d06daeae3be7936b0dbb60"
 dependencies = [
  "bitflags 2.6.0",
  "itertools 0.12.1",
@@ -1832,7 +1832,7 @@ dependencies = [
 [[package]]
 name = "floem_reactive"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=a207ef4bd463d41be1d06daeae3be7936b0dbb60#a207ef4bd463d41be1d06daeae3be7936b0dbb60"
 dependencies = [
  "smallvec",
 ]
@@ -1840,7 +1840,7 @@ dependencies = [
 [[package]]
 name = "floem_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=a207ef4bd463d41be1d06daeae3be7936b0dbb60#a207ef4bd463d41be1d06daeae3be7936b0dbb60"
 dependencies = [
  "cosmic-text",
  "image",
@@ -1853,7 +1853,7 @@ dependencies = [
 [[package]]
 name = "floem_tiny_skia_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=a207ef4bd463d41be1d06daeae3be7936b0dbb60#a207ef4bd463d41be1d06daeae3be7936b0dbb60"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -1870,7 +1870,7 @@ dependencies = [
 [[package]]
 name = "floem_vger_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=a207ef4bd463d41be1d06daeae3be7936b0dbb60#a207ef4bd463d41be1d06daeae3be7936b0dbb60"
 dependencies = [
  "anyhow",
  "floem-vger",
@@ -2938,7 +2938,7 @@ dependencies = [
 
 [[package]]
 name = "lapce"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "lapce-app",
  "lapce-proxy",
@@ -2946,7 +2946,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-app"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "Inflector",
  "alacritty_terminal",
@@ -3003,14 +3003,14 @@ dependencies = [
  "tracing-subscriber",
  "unicode-width",
  "url",
- "windows-sys 0.52.0",
+ "windows-sys 0.36.1",
  "zip",
  "zstd",
 ]
 
 [[package]]
 name = "lapce-core"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "ahash",
  "anyhow",
@@ -3038,7 +3038,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-proxy"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "alacritty_terminal",
  "anyhow",
@@ -3087,7 +3087,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-rpc"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -4542,9 +4542,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.122"
+version = "1.0.124"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "784b6203951c57ff748476b126ccb5e8e2959a5c19e5c617ab1956be3dbc68da"
+checksum = "66ad62847a56b3dba58cc891acd13884b9c61138d330c0d7b6181713d4fce38d"
 dependencies = [
  "itoa",
  "memchr",
