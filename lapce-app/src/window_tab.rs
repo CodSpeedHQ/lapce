@@ -1,4 +1,3 @@
-use alacritty_terminal::vte::ansi::Handler;
 use std::{
     collections::{BTreeMap, HashSet},
     env,
@@ -8,6 +7,7 @@ use std::{
     time::Instant,
 };
 
+use alacritty_terminal::vte::ansi::Handler;
 use crossbeam_channel::Sender;
 use floem::{
     action::{open_file, remove_overlay, TimerToken},
@@ -1394,6 +1394,65 @@ impl WindowTabData {
                     editor_data.call_hierarchy(self.clone());
                 }
             }
+            RunInTerminal => {
+                if let Some(editor_data) =
+                    self.main_split.active_editor.get_untracked()
+                {
+                    let name = editor_data.word_at_cursor();
+                    if !name.is_empty() {
+                        let mut args_str = name.split(" ");
+                        let program = args_str.next().map(|x| x.to_string()).unwrap();
+                        let args: Vec<String> = args_str.map(|x| x.to_string()).collect();
+                        let args = if args.is_empty() {
+                            None
+                        } else {
+                            Some(args)
+                        };
+
+                        let config = RunDebugConfig {
+                            ty: None,
+                            name,
+                            program,
+                            args,
+                            cwd: None,
+                            env: None,
+                            prelaunch: None,
+                            debug_command: None,
+                            dap_id: Default::default(),
+                        };
+                        self.common
+                            .internal_command
+                            .send(InternalCommand::RunAndDebug { mode: RunDebugMode::Run, config });
+                    }
+                }
+            }
+            GoToLocation => {
+                if let Some(editor_data) =
+                    self.main_split.active_editor.get_untracked()
+                {
+                    let doc = editor_data.doc();
+                    let path = match if doc.loaded() {
+                        doc.content.with_untracked(|c| c.path().cloned())
+                    } else {
+                        None
+                    } {
+                        Some(path) => path,
+                        None => return,
+                    };
+                    let offset = editor_data.cursor().with_untracked(|c| c.offset());
+                    let internal_command = self.common.internal_command;
+
+                    internal_command.send(InternalCommand::MakeConfirmed);
+                    internal_command.send(InternalCommand::GoToLocation { location: EditorLocation {
+                        path,
+                        position: Some(EditorPosition::Offset(offset)),
+                        scroll_offset: None,
+                        ignore_unconfirmed: false,
+                        same_editor_tab: false,
+                    } });
+                }
+            }
+
         }
     }
 
@@ -1948,6 +2007,7 @@ impl WindowTabData {
                     self.main_split.docs.with_untracked(|x| {
                         for doc in x.values() {
                             doc.get_code_lens();
+                            doc.get_document_symbol();
                             doc.get_semantic_styles();
                         }
                     });
@@ -2412,7 +2472,8 @@ impl WindowTabData {
             | PanelKind::Plugin
             | PanelKind::Problem
             | PanelKind::Debug
-            | PanelKind::CallHierarchy => {
+            | PanelKind::CallHierarchy
+            | PanelKind::DocumentSymbol => {
                 // Some panels don't accept focus (yet). Fall back to visibility check
                 // in those cases.
                 self.panel.is_panel_visible(&kind)
