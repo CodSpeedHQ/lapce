@@ -187,9 +187,27 @@ pub enum LapceWorkbenchCommand {
     #[strum(message = "Show Call Hierarchy")]
     ShowCallHierarchy,
 
-    #[strum(serialize = "reveal_in_file_tree")]
-    #[strum(message = "Reveal in File Tree")]
-    RevealInFileTree,
+    #[strum(serialize = "reveal_in_panel")]
+    #[strum(message = "Reveal in Panel")]
+    RevealInPanel,
+
+    #[strum(serialize = "open_in_git_bub")]
+    #[strum(message = "Open In GitHub")]
+    OpenInGitHub,
+
+    #[cfg(not(target_os = "macos"))]
+    #[strum(serialize = "reveal_in_file_explorer")]
+    #[strum(message = "Reveal in System File Explorer")]
+    RevealInFileExplorer,
+
+    #[cfg(target_os = "macos")]
+    #[strum(serialize = "reveal_in_file_explorer")]
+    #[strum(message = "Reveal in Finder")]
+    RevealInFileExplorer,
+
+    #[strum(serialize = "run_in_terminal")]
+    #[strum(message = "Run in Terminal")]
+    RunInTerminal,
 
     #[strum(serialize = "reveal_active_file_in_file_explorer")]
     #[strum(message = "Reveal Active File in File Explorer")]
@@ -562,6 +580,10 @@ pub enum LapceWorkbenchCommand {
     #[strum(serialize = "quit")]
     #[strum(message = "Quit Editor")]
     Quit,
+
+    #[strum(serialize = "go_to_location")]
+    #[strum(message = "Go to Location")]
+    GoToLocation,
 }
 
 #[derive(Clone, Debug)]
