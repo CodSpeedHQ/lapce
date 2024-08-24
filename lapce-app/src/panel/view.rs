@@ -3,7 +3,9 @@ use std::{rc::Rc, sync::Arc};
 use floem::{
     event::{Event, EventListener, EventPropagation},
     kurbo::{Point, Size},
-    reactive::{create_rw_signal, ReadSignal, RwSignal},
+    reactive::{
+        create_rw_signal, ReadSignal, RwSignal, SignalGet, SignalUpdate, SignalWith,
+    },
     style::{CursorStyle, Style},
     taffy::AlignItems,
     unit::PxPctAuto,
@@ -28,7 +30,9 @@ use crate::{
     app::{clickable_icon, clickable_icon_base},
     config::{color::LapceColor, icon::LapceIcons, LapceConfig},
     file_explorer::view::file_explorer_panel,
-    panel::call_hierarchy_view::show_hierarchy_panel,
+    panel::{
+        call_hierarchy_view::show_hierarchy_panel, document_symbol::symbol_panel,
+    },
     window_tab::{DragContent, WindowTabData},
 };
 
@@ -489,6 +493,9 @@ fn panel_view(
                     show_hierarchy_panel(window_tab_data.clone(), position)
                         .into_any()
                 }
+                PanelKind::DocumentSymbol => {
+                    symbol_panel(window_tab_data.clone(), position).into_any()
+                }
             };
             view.style(|s| s.size_pct(100.0, 100.0))
         },
@@ -533,18 +540,18 @@ fn panel_picker(
         |p| *p,
         move |p| {
             let window_tab_data = window_tab_data.clone();
-            let (icon, tooltip) = match p {
-                PanelKind::Terminal => (LapceIcons::TERMINAL, "Terminal"),
-                PanelKind::FileExplorer => {
-                    (LapceIcons::FILE_EXPLORER, "File Explorer")
-                }
-                PanelKind::SourceControl => (LapceIcons::SCM, "Source Control"),
-                PanelKind::Plugin => (LapceIcons::EXTENSIONS, "Plugins"),
-                PanelKind::Search => (LapceIcons::SEARCH, "Search"),
-                PanelKind::Problem => (LapceIcons::PROBLEM, "Problems"),
-                PanelKind::Debug => (LapceIcons::DEBUG_ALT, "Debug"),
-                PanelKind::CallHierarchy => (LapceIcons::LINK, "Call Hierarchy"),
+            let tooltip = match p {
+                PanelKind::Terminal => "Terminal",
+                PanelKind::FileExplorer => "File Explorer",
+                PanelKind::SourceControl => "Source Control",
+                PanelKind::Plugin => "Plugins",
+                PanelKind::Search => "Search",
+                PanelKind::Problem => "Problems",
+                PanelKind::Debug => "Debug",
+                PanelKind::CallHierarchy => "Call Hierarchy",
+                PanelKind::DocumentSymbol => "Document Symbol",
             };
+            let icon = p.svg_name();
             let is_active = {
                 let window_tab_data = window_tab_data.clone();
                 move || {
