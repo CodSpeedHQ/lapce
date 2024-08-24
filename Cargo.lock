@@ -150,9 +150,9 @@ checksum = "4b46cbb362ab8752921c97e041f5e366ee6297bd428a31275b9fcf1e380f7299"
 
 [[package]]
 name = "anstyle"
-version = "1.0.6"
+version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8901269c6307e8d93993578286ac0edf7f195079ffff5ebdeea6a59ffb7e36bc"
+checksum = "1bec1de6f59aedf83baf9ff929c98f2ad654b97c9510f4e70cf6f661d49fd5b1"
 
 [[package]]
 name = "anyhow"
@@ -764,9 +764,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.1"
+version = "4.5.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c918d541ef2913577a0f9566e9ce27cb35b6df072075769e0b26cb5a554520da"
+checksum = "ed6719fffa43d0d87e5fd8caeab59be1554fb028cd30edc88fc4369b17971019"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -774,9 +774,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.1"
+version = "4.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f3e7391dad68afb0c2ede1bf619f579a3dc9c2ec67f089baa397123a2f3d1eb"
+checksum = "216aec2b177652e3846684cbfe25c9964d18ec45234f0f5da5157b207ed1aab6"
 dependencies = [
  "anstyle",
  "clap_lex",
@@ -784,11 +784,11 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.5.0"
+version = "4.5.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "307bc0538d5f0f83b8248db3087aa92fe504e4691294d0c96c0eabc33f47ba47"
+checksum = "501d359d5f3dcaf6ecdeee48833ae73ec6e42723a1e52419c79abf9507eec0a0"
 dependencies = [
- "heck",
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.57",
@@ -1716,7 +1716,7 @@ checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
 [[package]]
 name = "floem"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "bitflags 2.6.0",
  "copypasta",
@@ -1734,7 +1734,6 @@ dependencies = [
  "image",
  "indexmap",
  "lapce-xi-rope",
- "once_cell",
  "parking_lot",
  "peniko",
  "raw-window-handle 0.6.0",
@@ -1754,13 +1753,12 @@ dependencies = [
 [[package]]
 name = "floem-editor-core"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "bitflags 2.6.0",
  "itertools 0.12.1",
  "lapce-xi-rope",
  "memchr",
- "once_cell",
  "serde",
  "strum",
  "strum_macros",
@@ -1832,7 +1830,7 @@ dependencies = [
 [[package]]
 name = "floem_reactive"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "smallvec",
 ]
@@ -1840,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "floem_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "cosmic-text",
  "image",
@@ -1853,7 +1851,7 @@ dependencies = [
 [[package]]
 name = "floem_tiny_skia_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -1870,7 +1868,7 @@ dependencies = [
 [[package]]
 name = "floem_vger_renderer"
 version = "0.1.1"
-source = "git+https://github.com/lapce/floem?rev=54f0d1bcf0e1a91d82492ee7300a526adb60eb5c#54f0d1bcf0e1a91d82492ee7300a526adb60eb5c"
+source = "git+https://github.com/lapce/floem?rev=3a974c9bbc0c1dfefc17affb976ea8e9ae31369b#3a974c9bbc0c1dfefc17affb976ea8e9ae31369b"
 dependencies = [
  "anyhow",
  "floem-vger",
@@ -2406,6 +2404,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
+name = "heck"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2938,7 +2942,7 @@ dependencies = [
 
 [[package]]
 name = "lapce"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "lapce-app",
  "lapce-proxy",
@@ -2946,7 +2950,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-app"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "Inflector",
  "alacritty_terminal",
@@ -3010,7 +3014,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-core"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "ahash",
  "anyhow",
@@ -3038,7 +3042,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-proxy"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "alacritty_terminal",
  "anyhow",
@@ -3087,7 +3091,7 @@ dependencies = [
 
 [[package]]
 name = "lapce-rpc"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -4877,7 +4881,7 @@ version = "0.26.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6cf59daf282c0a494ba14fd21610a0325f9f90ec9d1231dea26bcb1d696c946"
 dependencies = [
- "heck",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "rustversion",
@@ -6138,7 +6142,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f672060c021afd9a3ab72f4e319d1f7bb1f4e973d5e24130bb0bb11eba356f5e"
 dependencies = [
  "anyhow",
- "heck",
+ "heck 0.4.1",
  "indexmap",
  "wit-parser",
 ]
@@ -6449,7 +6453,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4143cb3a8c65efceba6fc3bf49769b7b5d60090f1226e708365044c1136584ee"
 dependencies = [
  "anyhow",
- "heck",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "shellexpand",
