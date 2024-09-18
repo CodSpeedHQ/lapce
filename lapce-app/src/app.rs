@@ -23,7 +23,7 @@ use floem::{
     },
     reactive::{
         create_effect, create_memo, create_rw_signal, provide_context, use_context,
-        ReadSignal, RwSignal, Scope,
+        ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith,
     },
     style::{
         AlignItems, CursorStyle, Display, FlexDirection, JustifyContent, Position,
@@ -38,9 +38,7 @@ use floem::{
     views::{
         clip, container, drag_resize_window_area, drag_window_area, dyn_stack,
         empty, label, rich_text,
-        scroll::{
-            scroll, HideBar, PropagatePointerWheel, VerticalScrollAsHorizontal,
-        },
+        scroll::{scroll, PropagatePointerWheel, VerticalScrollAsHorizontal},
         stack, svg, tab, text, tooltip, virtual_stack, Decorators, VirtualDirection,
         VirtualItemSize, VirtualVector,
     },
@@ -1055,9 +1053,9 @@ fn editor_tab_header(
                     .with_untracked(|editor_tab| editor_tab.children[active].1)
                     .get_untracked()
             })
+            .scroll_style(|s| s.hide_bars(true))
             .style(|s| {
-                s.set(HideBar, true)
-                    .set(VerticalScrollAsHorizontal, true)
+                s.set(VerticalScrollAsHorizontal, true)
                     .absolute()
                     .size_full()
             }),
@@ -2261,10 +2259,11 @@ fn palette_item(
                     .style(move |s| {
                         let config = config.get();
                         let size = config.ui.icon_size() as f32;
-                        s.min_width(size)
-                            .size(size, size)
-                            .margin_right(5.0)
-                            .color(config.color(LapceColor::LAPCE_ICON_ACTIVE))
+                        s.min_width(size).size(size, size).margin_right(5.0).color(
+                            config.symbol_color(&kind).unwrap_or_else(|| {
+                                config.color(LapceColor::LAPCE_ICON_ACTIVE)
+                            }),
+                        )
                     }),
                     focus_text(
                         move || text.clone(),
@@ -2795,10 +2794,10 @@ fn window_message_view(
                 }),
                 stack((
                     text(title.clone()).style(|s| {
-                        s.min_width(0.0).line_height(1.6).font_weight(Weight::BOLD)
+                        s.min_width(0.0).line_height(1.8).font_weight(Weight::BOLD)
                     }),
                     text(message.message.clone()).style(|s| {
-                        s.min_width(0.0).line_height(1.6).margin_top(5.0)
+                        s.min_width(0.0).line_height(1.8).margin_top(5.0)
                     }),
                 ))
                 .style(move |s| {
@@ -2818,6 +2817,7 @@ fn window_message_view(
                 )
                 .style(|s| s.margin_left(6.0)),
             ))
+            .on_event_stop(EventListener::PointerDown, |_| {})
             .style(move |s| {
                 let config = config.get();
                 s.width_full()
@@ -2846,7 +2846,11 @@ fn window_message_view(
                     .style(|s| s.flex_col().width_full()),
                 )
                 .style(|s| {
-                    s.absolute().width_full().min_height(0.0).max_height_full()
+                    s.absolute()
+                        .width_full()
+                        .min_height(0.0)
+                        .max_height_full()
+                        .set(PropagatePointerWheel, false)
                 }),
             )
             .style(|s| s.size_full()),
@@ -2930,6 +2934,7 @@ fn hover(window_tab_data: Rc<WindowTabData>) -> impl View {
         layout_rect.set(rect);
     })
     .on_event_stop(EventListener::PointerMove, |_| {})
+    .on_event_stop(EventListener::PointerDown, |_| {})
     .style(move |s| {
         let active = window_tab_data.common.hover.active.get();
         if !active {
@@ -3617,7 +3622,11 @@ fn window(window_data: WindowData) -> impl View {
 }
 
 pub fn launch() {
-    logging::panic_hook();
+    let cli = Cli::parse();
+
+    if !cli.wait {
+        logging::panic_hook();
+    }
 
     let (reload_handle, _guard) = logging::logging();
     trace!(TraceLevel::INFO, "Starting up Lapce..");
@@ -3652,8 +3661,6 @@ pub fn launch() {
         trace!(TraceLevel::INFO, "Loading custom environment from shell");
         load_shell_env();
     }
-
-    let cli = Cli::parse();
 
     // small hack to unblock terminal if launched from it
     // launch it as a separate process that waits

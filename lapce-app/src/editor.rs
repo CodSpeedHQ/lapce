@@ -13,7 +13,10 @@ use floem::{
     kurbo::{Point, Rect, Vec2},
     menu::{Menu, MenuItem},
     pointer::{PointerButton, PointerInputEvent, PointerMoveEvent},
-    reactive::{batch, use_context, ReadSignal, RwSignal, Scope},
+    reactive::{
+        batch, use_context, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate,
+        SignalWith,
+    },
     views::editor::{
         command::CommandExecuted,
         id::EditorId,
@@ -51,6 +54,7 @@ use lsp_types::{
     HoverContents, InlayHint, InlayHintLabel, InlineCompletionTriggerKind, Location,
     MarkedString, MarkupKind, Range, TextEdit,
 };
+use nucleo::Utf32Str;
 use serde::{Deserialize, Serialize};
 
 use self::{
@@ -187,6 +191,13 @@ impl EditorViewKind {
     }
 }
 
+#[derive(Clone)]
+pub struct OnScreenFind {
+    pub active: bool,
+    pub pattern: String,
+    pub regions: Vec<SelRegion>,
+}
+
 pub type SnippetIndex = Vec<(usize, (usize, usize))>;
 
 /// Shares data between cloned instances as long as the signals aren't swapped out.
@@ -198,6 +209,7 @@ pub struct EditorData {
     pub confirmed: RwSignal<bool>,
     pub snippet: RwSignal<Option<SnippetIndex>>,
     pub inline_find: RwSignal<Option<InlineFindDirection>>,
+    pub on_screen_find: RwSignal<OnScreenFind>,
     pub last_inline_find: RwSignal<Option<(InlineFindDirection, String)>>,
     pub find_focus: RwSignal<bool>,
     pub editor: Rc<Editor>,
@@ -231,6 +243,11 @@ impl EditorData {
             confirmed,
             snippet: cx.create_rw_signal(None),
             inline_find: cx.create_rw_signal(None),
+            on_screen_find: cx.create_rw_signal(OnScreenFind {
+                active: false,
+                pattern: "".to_string(),
+                regions: Vec::new(),
+            }),
             last_inline_find: cx.create_rw_signal(None),
             find_focus: cx.create_rw_signal(false),
             editor: Rc::new(editor),
@@ -435,6 +452,7 @@ impl EditorData {
             // Cancel so that there's no flickering
             self.cancel_inline_completion();
             self.update_inline_completion(InlineCompletionTriggerKind::Automatic);
+            self.quit_on_screen_find();
         } else if show_inline_completion(cmd) {
             self.update_inline_completion(InlineCompletionTriggerKind::Automatic);
         } else {
@@ -444,6 +462,7 @@ impl EditorData {
         self.apply_deltas(&deltas);
         if let EditCommand::NormalMode = cmd {
             self.snippet.set(None);
+            self.quit_on_screen_find();
         }
 
         CommandExecuted::Yes
@@ -750,7 +769,9 @@ impl EditorData {
                 self.cancel_completion();
             }
             FocusCommand::SplitVertical => {
-                if let Some(editor_tab_id) = self.editor_tab_id.get_untracked() {
+                if let Some(editor_tab_id) =
+                    self.editor_tab_id.read_only().get_untracked()
+                {
                     self.common.internal_command.send(InternalCommand::Split {
                         direction: SplitDirection::Vertical,
                         editor_tab_id,
@@ -1028,6 +1049,13 @@ impl EditorData {
             FocusCommand::InlineFindRight => {
                 self.inline_find.set(Some(InlineFindDirection::Right));
             }
+            FocusCommand::OnScreenFind => {
+                self.on_screen_find.update(|find| {
+                    find.active = true;
+                    find.pattern.clear();
+                    find.regions.clear();
+                });
+            }
             FocusCommand::RepeatLastInlineFind => {
                 if let Some((direction, c)) = self.last_inline_find.get_untracked() {
                     self.inline_find(direction, &c);
@@ -1128,6 +1156,72 @@ impl EditorData {
                 Modifiers::empty(),
             );
         }
+    }
+
+    fn quit_on_screen_find(&self) {
+        if self.on_screen_find.with_untracked(|s| s.active) {
+            self.on_screen_find.update(|f| {
+                f.active = false;
+                f.pattern.clear();
+                f.regions.clear();
+            })
+        }
+    }
+
+    fn on_screen_find(&self, pattern: &str) -> Vec<SelRegion> {
+        let screen_lines = self.screen_lines().get_untracked();
+        let lines: HashSet<usize> =
+            screen_lines.lines.iter().map(|l| l.line).collect();
+
+        let mut matcher = nucleo::Matcher::new(nucleo::Config::DEFAULT);
+        let pattern = nucleo::pattern::Pattern::parse(
+            pattern,
+            nucleo::pattern::CaseMatching::Ignore,
+            nucleo::pattern::Normalization::Smart,
+        );
+        let mut indices = Vec::new();
+        let mut filter_text_buf = Vec::new();
+        let mut items = Vec::new();
+
+        let buffer = self.doc().buffer;
+
+        for line in lines {
+            filter_text_buf.clear();
+            indices.clear();
+
+            buffer.with_untracked(|buffer| {
+                let start = buffer.offset_of_line(line);
+                let end = buffer.offset_of_line(line + 1);
+                let text = buffer.text().slice_to_cow(start..end);
+                let filter_text = Utf32Str::new(&text, &mut filter_text_buf);
+
+                if let Some(score) =
+                    pattern.indices(filter_text, &mut matcher, &mut indices)
+                {
+                    indices.sort();
+                    let left =
+                        start + indices.first().copied().unwrap_or(0) as usize;
+                    let right =
+                        start + indices.last().copied().unwrap_or(0) as usize + 1;
+                    let right = if right == left { left + 1 } else { right };
+                    items.push((score, left, right));
+                }
+            });
+        }
+
+        items.sort_by_key(|(score, _, _)| -(*score as i64));
+        if let Some((_, offset, _)) = items.first().copied() {
+            self.run_move_command(
+                &lapce_core::movement::Movement::Offset(offset),
+                None,
+                Modifiers::empty(),
+            );
+        }
+
+        items
+            .into_iter()
+            .map(|(_, start, end)| SelRegion::new(start, end, None))
+            .collect()
     }
 
     fn go_to_definition(&self) {
@@ -2640,23 +2734,28 @@ impl EditorData {
 
         let is_file = doc.content.with_untracked(|content| content.is_file());
         let mut menu = Menu::new("");
-        let cmds = if is_file {
+        let mut cmds = if is_file {
             vec![
                 Some(CommandKind::Focus(FocusCommand::GotoDefinition)),
                 Some(CommandKind::Focus(FocusCommand::GotoTypeDefinition)),
                 Some(CommandKind::Workbench(
                     LapceWorkbenchCommand::ShowCallHierarchy,
                 )),
-                None,
                 Some(CommandKind::Focus(FocusCommand::Rename)),
+                Some(CommandKind::Workbench(LapceWorkbenchCommand::RunInTerminal)),
+                None,
+                Some(CommandKind::Workbench(LapceWorkbenchCommand::RevealInPanel)),
+                Some(CommandKind::Workbench(
+                    LapceWorkbenchCommand::RevealInFileExplorer,
+                )),
+                Some(CommandKind::Workbench(
+                    LapceWorkbenchCommand::SourceControlOpenActiveFileRemoteUrl,
+                )),
                 None,
                 Some(CommandKind::Edit(EditCommand::ClipboardCut)),
                 Some(CommandKind::Edit(EditCommand::ClipboardCopy)),
                 Some(CommandKind::Edit(EditCommand::ClipboardPaste)),
                 None,
-                Some(CommandKind::Workbench(
-                    LapceWorkbenchCommand::RevealInFileTree,
-                )),
                 Some(CommandKind::Workbench(
                     LapceWorkbenchCommand::PaletteCommand,
                 )),
@@ -2672,6 +2771,11 @@ impl EditorData {
                 )),
             ]
         };
+        if self.diff_editor_id.get_untracked().is_some() && is_file {
+            cmds.push(Some(CommandKind::Workbench(
+                LapceWorkbenchCommand::GoToLocation,
+            )));
+        }
         let lapce_command = self.common.lapce_command;
         for cmd in cmds {
             if let Some(cmd) = cmd {
@@ -2946,6 +3050,9 @@ impl KeyPressFocus for EditorData {
             Condition::ListFocus => self.has_completions(),
             Condition::CompletionFocus => self.has_completions(),
             Condition::InlineCompletionVisible => self.has_inline_completions(),
+            Condition::OnScreenFindActive => {
+                self.on_screen_find.with_untracked(|f| f.active)
+            }
             Condition::InSnippet => self.snippet.with_untracked(|s| s.is_some()),
             Condition::EditorFocus => self
                 .doc()
@@ -3052,6 +3159,7 @@ impl KeyPressFocus for EditorData {
             false
         } else {
             self.inline_find.with_untracked(|f| f.is_some())
+                || self.on_screen_find.with_untracked(|f| f.active)
         }
     }
 
@@ -3097,6 +3205,12 @@ impl KeyPressFocus for EditorData {
                 self.inline_find(direction.clone(), c);
                 self.last_inline_find.set(Some((direction, c.to_string())));
                 self.inline_find.set(None);
+            } else if self.on_screen_find.with_untracked(|f| f.active) {
+                self.on_screen_find.update(|find| {
+                    let pattern = format!("{}{c}", find.pattern);
+                    find.regions = self.on_screen_find(&pattern);
+                    find.pattern = pattern;
+                });
             }
         }
     }
@@ -3292,7 +3406,7 @@ pub(crate) fn compute_screen_lines(
             let is_right = diff_info.is_right;
 
             let line_y = |info: VLineInfo<()>, vline_y: usize| -> usize {
-                vline_y - info.rvline.line_index * line_height
+                vline_y.saturating_sub(info.rvline.line_index * line_height)
             };
 
             while let Some(change) = changes.next() {
@@ -3501,10 +3615,10 @@ fn parse_hover_resp(
 ) -> Vec<MarkdownContent> {
     match hover.contents {
         HoverContents::Scalar(text) => match text {
-            MarkedString::String(text) => parse_markdown(&text, 1.5, config),
+            MarkedString::String(text) => parse_markdown(&text, 1.8, config),
             MarkedString::LanguageString(code) => parse_markdown(
                 &format!("```{}\n{}\n```", code.language, code.value),
-                1.5,
+                1.8,
                 config,
             ),
         },
@@ -3519,8 +3633,8 @@ fn parse_hover_resp(
             })
             .unwrap_or_default(),
         HoverContents::Markup(content) => match content.kind {
-            MarkupKind::PlainText => from_plaintext(&content.value, 1.5, config),
-            MarkupKind::Markdown => parse_markdown(&content.value, 1.5, config),
+            MarkupKind::PlainText => from_plaintext(&content.value, 1.8, config),
+            MarkupKind::Markdown => parse_markdown(&content.value, 1.8, config),
         },
     }
 }

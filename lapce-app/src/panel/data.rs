@@ -2,7 +2,9 @@ use std::{rc::Rc, sync::Arc};
 
 use floem::{
     kurbo::Size,
-    reactive::{use_context, Memo, RwSignal, Scope},
+    reactive::{
+        use_context, Memo, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith,
+    },
 };
 use serde::{Deserialize, Serialize};
 
@@ -37,6 +39,10 @@ pub fn default_panel_order() -> PanelOrder {
             PanelKind::Problem,
             PanelKind::CallHierarchy
         ],
+    );
+    order.insert(
+        PanelPosition::RightTop,
+        im::vector![PanelKind::DocumentSymbol,],
     );
 
     order
