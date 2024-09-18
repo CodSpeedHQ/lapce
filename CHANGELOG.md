@@ -3,6 +3,26 @@
 ## Unreleased
 
 ### Features/Changes
+
+### Bug Fixes
+
+## 0.4.2
+
+### Features/Changes
+- Implement "Run in terminal"
+- Implement document symbols in a panel
+- Implement "Go To Location" functionality in the Diff editor.
+- Implement on screen find which is similar to `f` in vim but for the whole screen.
+- Make file explorer horizontal scrollable
+- Implement "Reveal in system file explorer"
+
+### Bug Fixes
+- Fix markdown syntax highlighting
+- Fix click issue on window error message
+
+## 0.4.1
+
+### Features/Changes
 - Add fedora builds
 - Finish tree sitter dynamic libary support by downloading from https://github.com/lapce/tree-sitter-grammars
 - Saves scale configuration in settings to restore at startup

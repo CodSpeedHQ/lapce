@@ -11,6 +11,7 @@ use floem::{
     },
     reactive::{
         create_effect, create_memo, create_rw_signal, Memo, ReadSignal, RwSignal,
+        SignalGet, SignalUpdate, SignalWith,
     },
     style::{CursorColor, CursorStyle, Style, TextColor},
     taffy::prelude::NodeId,
@@ -30,7 +31,7 @@ use floem::{
             ShowIndentGuide, SmartTab, VisibleWhitespaceColor, WrapProp,
         },
         empty, label,
-        scroll::{scroll, HideBar, PropagatePointerWheel},
+        scroll::{scroll, PropagatePointerWheel},
         stack, svg, Decorators,
     },
     Renderer, View, ViewId,
@@ -39,6 +40,7 @@ use itertools::Itertools;
 use lapce_core::{
     buffer::{diff::DiffLines, rope_text::RopeText, Buffer},
     cursor::{CursorAffinity, CursorMode},
+    selection::SelRegion,
 };
 use lapce_rpc::{
     dap_types::{DapId, SourceBreakpoint},
@@ -477,8 +479,8 @@ impl EditorView {
     }
 
     fn paint_find(&self, cx: &mut PaintCx, screen_lines: &ScreenLines) {
-        let visual = self.editor.common.find.visual;
-        if !visual.get_untracked() {
+        let find_visual = self.editor.common.find.visual.get_untracked();
+        if !find_visual && self.editor.on_screen_find.with_untracked(|f| !f.active) {
             return;
         }
         if screen_lines.lines.is_empty() {
@@ -499,78 +501,108 @@ impl EditorView {
 
         let config = config.get_untracked();
         let line_height = config.editor.line_height() as f64;
+        let color = config.color(LapceColor::EDITOR_FOREGROUND);
 
-        doc.update_find();
         let start = ed.offset_of_line(min_line);
         let end = ed.offset_of_line(max_line + 1);
 
         // TODO: The selection rect creation logic for find is quite similar to the version
         // within insert cursor. It would be good to deduplicate it.
-        let mut rects = Vec::new();
-        for region in occurrences.with_untracked(|selection| {
-            selection.regions_in_range(start, end).to_vec()
-        }) {
-            let start = region.min();
-            let end = region.max();
-
-            // TODO(minor): the proper affinity here should probably be tracked by selregion
-            let (start_rvline, start_col) =
-                ed.rvline_col_of_offset(start, CursorAffinity::Forward);
-            let (end_rvline, end_col) =
-                ed.rvline_col_of_offset(end, CursorAffinity::Backward);
-
-            for line_info in screen_lines.iter_line_info() {
-                let rvline_info = line_info.vline_info;
-                let rvline = rvline_info.rvline;
-                let line = rvline.line;
-
-                if rvline < start_rvline {
-                    continue;
-                }
-
-                if rvline > end_rvline {
-                    break;
-                }
-
-                let left_col = if rvline == start_rvline { start_col } else { 0 };
-                let (right_col, _vline_end) = if rvline == end_rvline {
-                    let max_col = ed.last_col(rvline_info, true);
-                    (end_col.min(max_col), false)
-                } else {
-                    (ed.last_col(rvline_info, true), true)
-                };
-
-                // TODO(minor): sel region should have the affinity of the start/end
-                let x0 = ed
-                    .line_point_of_line_col(
-                        line,
-                        left_col,
-                        CursorAffinity::Forward,
-                        true,
-                    )
-                    .x;
-                let x1 = ed
-                    .line_point_of_line_col(
-                        line,
-                        right_col,
-                        CursorAffinity::Backward,
-                        true,
-                    )
-                    .x;
-
-                if !rvline_info.is_empty() && start != end && left_col != right_col {
-                    rects.push(
-                        Size::new(x1 - x0, line_height)
-                            .to_rect()
-                            .with_origin(Point::new(x0, line_info.vline_y)),
-                    );
-                }
+        if find_visual {
+            doc.update_find();
+            for region in occurrences.with_untracked(|selection| {
+                selection.regions_in_range(start, end).to_vec()
+            }) {
+                self.paint_find_region(
+                    cx,
+                    ed,
+                    &region,
+                    color,
+                    screen_lines,
+                    line_height,
+                );
             }
         }
 
-        let color = config.color(LapceColor::EDITOR_FOREGROUND);
-        for rect in rects {
-            cx.stroke(&rect, color, 1.0);
+        self.editor.on_screen_find.with_untracked(|find| {
+            if find.active {
+                for region in &find.regions {
+                    self.paint_find_region(
+                        cx,
+                        ed,
+                        region,
+                        color,
+                        screen_lines,
+                        line_height,
+                    );
+                }
+            }
+        });
+    }
+
+    fn paint_find_region(
+        &self,
+        cx: &mut PaintCx,
+        ed: &Editor,
+        region: &SelRegion,
+        color: Color,
+        screen_lines: &ScreenLines,
+        line_height: f64,
+    ) {
+        let start = region.min();
+        let end = region.max();
+
+        // TODO(minor): the proper affinity here should probably be tracked by selregion
+        let (start_rvline, start_col) =
+            ed.rvline_col_of_offset(start, CursorAffinity::Forward);
+        let (end_rvline, end_col) =
+            ed.rvline_col_of_offset(end, CursorAffinity::Backward);
+
+        for line_info in screen_lines.iter_line_info() {
+            let rvline_info = line_info.vline_info;
+            let rvline = rvline_info.rvline;
+            let line = rvline.line;
+
+            if rvline < start_rvline {
+                continue;
+            }
+
+            if rvline > end_rvline {
+                break;
+            }
+
+            let left_col = if rvline == start_rvline { start_col } else { 0 };
+            let (right_col, _vline_end) = if rvline == end_rvline {
+                let max_col = ed.last_col(rvline_info, true);
+                (end_col.min(max_col), false)
+            } else {
+                (ed.last_col(rvline_info, true), true)
+            };
+
+            // TODO(minor): sel region should have the affinity of the start/end
+            let x0 = ed
+                .line_point_of_line_col(
+                    line,
+                    left_col,
+                    CursorAffinity::Forward,
+                    true,
+                )
+                .x;
+            let x1 = ed
+                .line_point_of_line_col(
+                    line,
+                    right_col,
+                    CursorAffinity::Backward,
+                    true,
+                )
+                .x;
+
+            if !rvline_info.is_empty() && start != end && left_col != right_col {
+                let rect = Size::new(x1 - x0, line_height)
+                    .to_rect()
+                    .with_origin(Point::new(x0, line_info.vline_y));
+                cx.stroke(&rect, color, 1.0);
+            }
         }
     }
 
@@ -1866,9 +1898,9 @@ fn editor_breadcrumbs(
             doc.track();
             Some(Point::new(3000.0, 0.0))
         })
+        .scroll_style(|s| s.hide_bars(true))
         .style(move |s| {
-            s.set(HideBar, true)
-                .absolute()
+            s.absolute()
                 .size_pct(100.0, 100.0)
                 .border_bottom(1.0)
                 .border_color(config.get().color(LapceColor::LAPCE_BORDER))
@@ -1923,6 +1955,8 @@ fn editor_content(
         });
     }
 
+    let current_scroll = create_rw_signal(Rect::ZERO);
+
     scroll({
         let editor_content_view =
             editor_view(e_data.get_untracked(), debug_breakline, is_active).style(
@@ -1970,10 +2004,14 @@ fn editor_content(
     .on_move(move |point| {
         window_origin.set(point);
     })
-    .on_scroll(move |_| {
-        let e_data = e_data.get_untracked();
-        e_data.cancel_completion();
-        e_data.cancel_inline_completion();
+    .on_scroll(move |rect| {
+        if rect.y0 != current_scroll.get_untracked().y0 {
+            // only cancel completion if scrolled vertically
+            let e_data = e_data.get_untracked();
+            e_data.cancel_completion();
+            e_data.cancel_inline_completion();
+        }
+        current_scroll.set(rect);
     })
     .scroll_to(move || scroll_to.get().map(|s| s.to_point()))
     .scroll_delta(move || scroll_delta.get())
