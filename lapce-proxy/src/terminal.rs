@@ -360,8 +360,17 @@ impl State {
 
 #[cfg(target_os = "macos")]
 fn set_locale_environment() {
-    let locale = locale_config::Locale::global_default()
-        .to_string()
-        .replace('-', "_");
-    std::env::set_var("LC_ALL", locale + ".UTF-8");
+    let locale_result = std::panic::catch_unwind(|| {
+        locale_config::Locale::global_default()
+            .to_string()
+            .replace('-', "_")
+    });
+
+    if let Ok(locale) = locale_result {
+        std::env::set_var("LC_ALL", locale + ".UTF-8");
+    } else {
+        tracing::error!(
+            "Failed to get system locale due to a panic in locale_config"
+        );
+    }
 }
