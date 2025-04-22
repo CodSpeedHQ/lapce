@@ -21,6 +21,7 @@ use serde_json::Value;
 use strum::{EnumMessage, IntoEnumIterator};
 use strum_macros::{Display, EnumIter, EnumMessage, EnumString, IntoStaticStr};
 
+use crate::main_split::TabCloseKind;
 use crate::{
     alert::AlertButton,
     debug::RunDebugMode,
